@@ -451,18 +451,19 @@ const users = UserFactory.buildMany(5);
 
 ## Important Patterns
 
-### Use `declare` for Component Properties
+### Use Getter Methods for Child Components
 
-When using decorators, use `declare` instead of `!` to avoid TypeScript field initialization issues:
+Playwright's built-in transpiler has compatibility issues with decorator metadata. Use getter methods for reliable component composition:
 
 ```typescript
-// Correct
-@Component('[data-testid="header"]', { type: HeaderComponent })
-declare readonly header: HeaderComponent;
-
-// Incorrect - causes issues
-@Component('[data-testid="header"]', { type: HeaderComponent })
-header!: HeaderComponent;
+// Correct - getter method
+get header() {
+  return new HeaderComponent(
+    this.page.locator('[data-testid="header"]'),
+    this.config,
+    this.page
+  );
+}
 ```
 
 ### Static Selectors
