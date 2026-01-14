@@ -1,32 +1,36 @@
-export type ScreenshotMode = 'off' | 'on' | 'only-on-failure';
-export type TraceMode = 'off' | 'on' | 'retain-on-failure';
-export type VideoMode = 'off' | 'on' | 'retain-on-failure';
+import { z } from 'zod';
+import {
+  ScreenshotModeSchema,
+  TraceModeSchema,
+  VideoModeSchema,
+  DiagnosticsConfigSchema,
+  TimeoutsConfigSchema,
+  CredentialsConfigSchema,
+  SiteConfigSchema,
+} from './schemas.js';
 
-export interface DiagnosticsConfig {
-  screenshot: ScreenshotMode;
-  trace: TraceMode;
-  video: VideoMode;
-}
+// Derived types from Zod schemas
+export type ScreenshotMode = z.infer<typeof ScreenshotModeSchema>;
+export type TraceMode = z.infer<typeof TraceModeSchema>;
+export type VideoMode = z.infer<typeof VideoModeSchema>;
+export type DiagnosticsConfig = z.infer<typeof DiagnosticsConfigSchema>;
+export type TimeoutsConfig = z.infer<typeof TimeoutsConfigSchema>;
+export type CredentialsConfig = z.infer<typeof CredentialsConfigSchema>;
+export type SiteConfig = z.infer<typeof SiteConfigSchema>;
 
-export interface TimeoutsConfig {
-  navigation: number;
-  action: number;
-  assertion: number;
-}
-
-export interface CredentialsConfig {
-  username: string;
-  password: string;
-}
-
-export interface SiteConfig {
-  baseUrl: string;
-  credentials?: CredentialsConfig;
-  timeouts: TimeoutsConfig;
-  diagnostics?: DiagnosticsConfig;
-}
-
+// Interface not derived from schema
 export interface ResolveOptions {
   site: string;
   env?: string;
 }
+
+// Re-export schemas for validation use
+export {
+  ScreenshotModeSchema,
+  TraceModeSchema,
+  VideoModeSchema,
+  DiagnosticsConfigSchema,
+  TimeoutsConfigSchema,
+  CredentialsConfigSchema,
+  SiteConfigSchema,
+};

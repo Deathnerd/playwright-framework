@@ -10,13 +10,22 @@ export interface TestFixtures {
 
 export const test = base.extend<TestFixtures>({
   config: async ({}, use, testInfo) => {
-    const site = process.env.SITE;
-    const env = process.env.ENV ?? 'staging';
+    // Get site from SITE env var, or detect from test file path
+    let site = process.env.SITE;
 
     if (!site) {
-      throw new Error('SITE environment variable is required');
+      // Extract site name from test path: sites/<site>/tests/...
+      const match = testInfo.file.match(/sites[/\\]([^/\\]+)[/\\]/);
+      if (match) {
+        site = match[1];
+      }
     }
 
+    if (!site) {
+      throw new Error('Could not determine site. Set SITE env var or run from sites/<site>/tests/');
+    }
+
+    const env = process.env.ENV ?? 'staging';
     const loader = new ConfigLoader();
     const config = await loader.resolve({ site, env });
 

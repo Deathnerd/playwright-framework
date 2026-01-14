@@ -1,4 +1,4 @@
-import type { Locator } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import type { SiteConfig } from '../config/types.js';
 
 export class BaseComponent {
@@ -6,6 +6,7 @@ export class BaseComponent {
 
   constructor(
     public readonly locator: Locator,
-    public readonly config: SiteConfig
+    public readonly config: SiteConfig,
+    public readonly page?: Page
   ) {}
 }

@@ -62,10 +62,11 @@ export class BasePage {
         (this as any)[propertyKey] = new ComponentCollection(
           locator,
           ComponentClass as any,
-          this.config
+          this.config,
+          this.page
         );
       } else {
-        (this as any)[propertyKey] = new ComponentClass(locator, this.config);
+        (this as any)[propertyKey] = new ComponentClass(locator, this.config, this.page);
       }
     }
   }

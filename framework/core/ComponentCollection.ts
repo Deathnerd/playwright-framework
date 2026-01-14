@@ -1,4 +1,4 @@
-import type { Locator } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import type { SiteConfig } from '../config/types.js';
 import type { ComponentConstructor } from './types.js';
 import { BaseComponent } from './BaseComponent.js';
@@ -13,7 +13,8 @@ export class ComponentCollection<T extends BaseComponent> {
   constructor(
     private readonly locator: Locator,
     private readonly ComponentClass: ComponentConstructor<T>,
-    private readonly config: SiteConfig
+    private readonly config: SiteConfig,
+    private readonly page?: Page
   ) {
     // Proxy enables array-like access: collection[0], collection[1], etc.
     // The interface declaration above makes this type-safe without casts
@@ -32,22 +33,23 @@ export class ComponentCollection<T extends BaseComponent> {
   }
 
   nth(index: number): T {
-    return new this.ComponentClass(this.locator.nth(index), this.config);
+    return new this.ComponentClass(this.locator.nth(index), this.config, this.page);
   }
 
   first(): T {
-    return new this.ComponentClass(this.locator.first(), this.config);
+    return new this.ComponentClass(this.locator.first(), this.config, this.page);
   }
 
   last(): T {
-    return new this.ComponentClass(this.locator.last(), this.config);
+    return new this.ComponentClass(this.locator.last(), this.config, this.page);
   }
 
   filter(options: { hasText?: string | RegExp; has?: Locator }): ComponentCollection<T> {
     return new ComponentCollection(
       this.locator.filter(options),
       this.ComponentClass,
-      this.config
+      this.config,
+      this.page
     );
   }
 

@@ -3,6 +3,7 @@ import { ConfigLoader } from './loader.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import { ZodError } from 'zod';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -80,5 +81,35 @@ describe('ConfigLoader', () => {
 
     await expect(loader.resolve({ site: 'nonexistent' }))
       .rejects.toThrow(/Site config not found/);
+  });
+
+  it('should throw ZodError for invalid baseUrl', async () => {
+    await fs.writeFile(
+      path.join(testSitesDir, 'testsite', 'config.json'),
+      JSON.stringify({
+        baseUrl: 'not-a-valid-url',
+        timeouts: { navigation: 30000, action: 5000, assertion: 5000 },
+      })
+    );
+
+    const loader = new ConfigLoader({ sitesDir: testSitesDir });
+
+    await expect(loader.resolve({ site: 'testsite' }))
+      .rejects.toThrow(ZodError);
+  });
+
+  it('should throw ZodError for negative timeout', async () => {
+    await fs.writeFile(
+      path.join(testSitesDir, 'testsite', 'config.json'),
+      JSON.stringify({
+        baseUrl: 'https://testsite.com',
+        timeouts: { navigation: -1000, action: 5000, assertion: 5000 },
+      })
+    );
+
+    const loader = new ConfigLoader({ sitesDir: testSitesDir });
+
+    await expect(loader.resolve({ site: 'testsite' }))
+      .rejects.toThrow(ZodError);
   });
 });

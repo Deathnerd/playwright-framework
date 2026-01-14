@@ -61,4 +61,29 @@ describe('@Component decorator', () => {
     expect(allMetadata.header.selector).toBe('[data-testid="header"]');
     expect(allMetadata.footer.selector).toBe('[data-testid="footer"]');
   });
+
+  it('should store type from explicit type option', () => {
+    class HeaderComponent extends BaseComponent {}
+
+    class PageComponent extends BaseComponent {
+      @Component('[data-testid="header"]', { type: HeaderComponent })
+      readonly header!: HeaderComponent;
+    }
+
+    const metadata = getComponentMetadata(PageComponent.prototype, 'header');
+    expect(metadata?.type).toBe(HeaderComponent);
+  });
+
+  it('should support both type and multiple options', () => {
+    class ItemComponent extends BaseComponent {}
+
+    class ListComponent extends BaseComponent {
+      @Component('[data-testid="item"]', { type: ItemComponent, multiple: true })
+      readonly items!: ItemComponent[];
+    }
+
+    const metadata = getComponentMetadata(ListComponent.prototype, 'items');
+    expect(metadata?.type).toBe(ItemComponent);
+    expect(metadata?.multiple).toBe(true);
+  });
 });

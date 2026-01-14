@@ -1,8 +1,10 @@
 import * as fs from 'fs/promises';
+import * as fsSync from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { SiteConfig, ResolveOptions } from './types.js';
 import { interpolateEnvVars } from './interpolate.js';
+import { SiteConfigSchema } from './schemas.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -52,7 +54,8 @@ export class ConfigLoader {
     // Interpolate environment variables
     const interpolated = interpolateEnvVars(merged);
 
-    return interpolated as SiteConfig;
+    // Validate with Zod schema
+    return SiteConfigSchema.parse(interpolated);
   }
 
   private async loadJson<T>(filePath: string, required = false): Promise<T> {
@@ -67,6 +70,49 @@ export class ConfigLoader {
         return {} as T;
       }
       throw error;
+    }
+  }
+
+  /**
+   * Synchronously check if a site/environment is enabled.
+   * Returns { enabled: boolean, reason?: string } where reason explains why it's disabled.
+   */
+  isEnabledSync(options: ResolveOptions): { enabled: boolean; reason?: string } {
+    const { site, env } = options;
+
+    // Check site config
+    const siteConfigPath = path.join(this.sitesDir, site, 'config.json');
+    const siteConfig = this.loadJsonSync<Partial<SiteConfig>>(siteConfigPath);
+
+    if (siteConfig.enabled === false) {
+      return { enabled: false, reason: `Site "${site}" is disabled in config.json` };
+    }
+
+    // Check environment config if specified
+    if (env) {
+      const envConfigPath = path.join(this.sitesDir, site, 'env', `${env}.json`);
+      const envConfig = this.loadJsonSync<Partial<SiteConfig>>(envConfigPath);
+
+      if (envConfig.enabled === false) {
+        return { enabled: false, reason: `Environment "${env}" is disabled for site "${site}"` };
+      }
+    }
+
+    // Check local overrides
+    const localConfig = this.loadJsonSync<Partial<SiteConfig>>(this.localConfigPath);
+    if (localConfig.enabled === false) {
+      return { enabled: false, reason: `Disabled in local.json` };
+    }
+
+    return { enabled: true };
+  }
+
+  private loadJsonSync<T>(filePath: string): T {
+    try {
+      const content = fsSync.readFileSync(filePath, 'utf-8');
+      return JSON.parse(content) as T;
+    } catch {
+      return {} as T;
     }
   }
 
