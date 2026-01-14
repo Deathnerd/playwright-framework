@@ -1,60 +1,67 @@
-# Playwright Page Object Framework
+# CLAUDE.md
 
-Multi-site, component-based page object framework for Playwright with strict TypeScript.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Quick Start
+## Commands
 
 ```bash
-# Run tests for a specific site
-SITE=example ENV=staging npm test
+# Playwright E2E tests
+npm test                              # Run all enabled sites
+SITE=<name> npm test                  # Run specific site
+SITE=<name> ENV=staging npm test      # Run with environment
+npm test -- sites/<site>/tests/foo.spec.ts  # Run single test file
+npm run test:ui                       # Playwright UI mode
 
-# Run all site tests
-npm test
+# Unit tests (Vitest)
+npm run test:unit                     # Run all unit tests
+npx vitest run framework/config/      # Run tests in directory
+
+# Type checking
+npm run lint                          # TypeScript --noEmit
 ```
 
-## Project Structure
+## Architecture
 
-- `framework/` - Core framework code
-  - `core/` - BaseComponent, BasePage, decorators
-  - `config/` - Configuration loader with 4-level inheritance
-  - `expect/` - Custom Playwright matchers
-  - `data/` - Test data factories
-  - `diagnostics/` - Failure capture utilities
-- `sites/<site>/` - Site-specific code
-  - `config.json` - Site configuration
-  - `env/` - Environment overrides
-  - `components/` - Site components
-  - `pages/` - Page objects
-  - `tests/` - Test files
+Multi-site Playwright page object framework with component composition.
+
+**Layer model:**
+- `framework/` - Shared core: BaseComponent, BasePage, ConfigLoader, test fixture
+- `sites/<site>/` - Site implementations: components, pages, tests, config
+
+**Component composition:** Pages contain components, components contain components. Each receives a scoped `Locator` and `SiteConfig`.
+
+**Config inheritance:** `framework/defaults.json` → `sites/<site>/config.json` → `env/<env>.json` → `local.json` → `${ENV_VAR}` interpolation. Validated with Zod schemas.
+
+**Test fixture:** Import `test` and `expect` from `@framework/test`. Fixture provides `config` with resolved site configuration.
 
 ## Key Patterns
 
-### Components
-- Extend `BaseComponent`
-- Use `@Component` decorator for child components
-- Define `static readonly selectors` for element selectors
-- Use `declare` keyword for component properties (not `!`)
+**Component properties:** Use `declare` keyword (not `!`) to avoid TypeScript field initialization issues with decorators.
 
-### Pages
-- Extend `BasePage`
-- Use `@Page('/route')` decorator
-- Components are auto-initialized from decorators
+```typescript
+@Component('[data-testid="header"]', { type: HeaderComponent })
+declare readonly header: HeaderComponent;
+```
 
-### Configuration
-Inheritance: `framework/defaults.json` → `sites/<site>/config.json` → `env/<env>.json` → `local.json`
+**Selectors:** Define as `static readonly selectors` object for type safety.
 
-Supports `${VAR:-default}` interpolation.
+**Site enable/disable:** Set `enabled: false` in site or env config to skip during test discovery.
 
-## Adding a Site
+## Skills
 
-1. Create `sites/<name>/config.json`
-2. Create `sites/<name>/env/staging.json` (and other envs)
-3. Add components in `sites/<name>/components/`
-4. Add pages in `sites/<name>/pages/`
-5. Add tests in `sites/<name>/tests/`
-6. Create `sites/<name>/CLAUDE.md` for AI context
+Use these skills for common tasks:
 
-## Important Notes
+- `/add-site` - Create new site with config, directories, CLAUDE.md
+- `/add-page` - Create page object with route and components
+- `/add-component` - Create component with selectors and methods
+- `/write-test` - Write Playwright test using the framework
 
-- Use `declare` keyword for component properties to avoid TypeScript field initialization issues
-- Component types must be passed explicitly in `@Component` decorator options: `{ type: MyComponent }`
+## Documentation
+
+See `docs/` for detailed guides:
+- `architecture.md` - Framework design and layers
+- `components.md` - Component patterns and BaseComponent API
+- `page-objects.md` - Page patterns and BasePage API
+- `configuration.md` - Config loader, inheritance, Zod validation
+- `testing.md` - Test patterns and fixtures
+- `patterns/` - Fluent chains, shared components
