@@ -1,0 +1,8 @@
+{
+  "baseUrl": "https://example.com",
+  "timeouts": {
+    "navigation": 30000,
+    "action": 5000,
+    "assertion": 5000
+  }
+}
