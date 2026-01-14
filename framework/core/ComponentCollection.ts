@@ -3,9 +3,11 @@ import type { SiteConfig } from '../config/types.js';
 import type { ComponentConstructor } from './types.js';
 import { BaseComponent } from './BaseComponent.js';
 
-export type ArrayAccessible<T extends BaseComponent> = ComponentCollection<T> & {
+// Declaration merging: interface adds index signature to the class
+// This tells TypeScript that ComponentCollection<T> supports numeric indexing
+export interface ComponentCollection<T extends BaseComponent> {
   [index: number]: T;
-};
+}
 
 export class ComponentCollection<T extends BaseComponent> {
   constructor(
@@ -13,6 +15,8 @@ export class ComponentCollection<T extends BaseComponent> {
     private readonly ComponentClass: ComponentConstructor<T>,
     private readonly config: SiteConfig
   ) {
+    // Proxy enables array-like access: collection[0], collection[1], etc.
+    // The interface declaration above makes this type-safe without casts
     return new Proxy(this, {
       get(target, prop, receiver) {
         if (typeof prop === 'string' && /^\d+$/.test(prop)) {
@@ -20,7 +24,7 @@ export class ComponentCollection<T extends BaseComponent> {
         }
         return Reflect.get(target, prop, receiver);
       },
-    }) as ArrayAccessible<T>;
+    });
   }
 
   async count(): Promise<number> {
@@ -44,7 +48,7 @@ export class ComponentCollection<T extends BaseComponent> {
       this.locator.filter(options),
       this.ComponentClass,
       this.config
-    ) as ArrayAccessible<T> as ComponentCollection<T>;
+    );
   }
 
   async *[Symbol.asyncIterator](): AsyncIterableIterator<T> {

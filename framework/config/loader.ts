@@ -76,10 +76,10 @@ export class ConfigLoader {
     for (const obj of objects) {
       for (const [key, value] of Object.entries(obj)) {
         if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-          result[key] = this.deepMerge(
-            (result[key] as Record<string, unknown>) ?? {},
-            value as Record<string, unknown>
-          );
+          // Safe cast: we've verified value is a non-null, non-array object
+          const existingValue = (result[key] ?? {}) as Record<string, unknown>;
+          const newValue = value as unknown as Record<string, unknown>;
+          result[key] = this.deepMerge(existingValue, newValue);
         } else {
           result[key] = value;
         }
