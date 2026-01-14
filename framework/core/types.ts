@@ -13,6 +13,7 @@ export interface BaseComponentInterface {
 
 export interface ComponentOptions {
   multiple?: boolean;
+  type?: ComponentConstructor;
 }
 
 export interface ComponentDefineOptions {

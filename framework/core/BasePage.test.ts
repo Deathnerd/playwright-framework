@@ -1,6 +1,9 @@
 import 'reflect-metadata';
 import { describe, it, expect, vi } from 'vitest';
 import { BasePage, Page as PageDecorator, getPageRoute } from './BasePage.js';
+import { Component } from './decorators.js';
+import { BaseComponent } from './BaseComponent.js';
+import { ComponentCollection } from './ComponentCollection.js';
 import type { Page } from '@playwright/test';
 import type { SiteConfig } from '../config/types.js';
 
@@ -75,5 +78,50 @@ describe('BasePage', () => {
     await customPage.goto();
 
     expect(customWait).toHaveBeenCalled();
+  });
+
+  describe('component initialization', () => {
+    it('should initialize child components from @Component decorators', () => {
+      class HeaderComponent extends BaseComponent {}
+
+      @PageDecorator('/home')
+      class HomePage extends BasePage {
+        @Component('[data-testid="header"]', { type: HeaderComponent })
+        declare readonly header: HeaderComponent;
+      }
+
+      const mockLocator = {
+        locator: vi.fn().mockReturnValue({
+          textContent: vi.fn().mockResolvedValue('Header'),
+        }),
+      };
+      const page = createMockPage();
+      (page as any).locator = vi.fn().mockReturnValue(mockLocator);
+
+      const homePage = new HomePage(page, mockConfig);
+
+      expect(homePage.header).toBeInstanceOf(HeaderComponent);
+    });
+
+    it('should initialize ComponentCollection for multiple components', () => {
+      class ItemComponent extends BaseComponent {}
+
+      @PageDecorator('/list')
+      class ListPage extends BasePage {
+        @Component('[data-testid="item"]', { multiple: true, type: ItemComponent })
+        declare readonly items: ComponentCollection<ItemComponent>;
+      }
+
+      const mockLocator = {
+        count: vi.fn().mockResolvedValue(3),
+        nth: vi.fn().mockReturnValue({}),
+      };
+      const page = createMockPage();
+      (page as any).locator = vi.fn().mockReturnValue(mockLocator);
+
+      const listPage = new ListPage(page, mockConfig);
+
+      expect(listPage.items).toBeInstanceOf(ComponentCollection);
+    });
   });
 });

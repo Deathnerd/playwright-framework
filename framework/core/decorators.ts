@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import type { ComponentOptions } from './types.js';
+import type { ComponentOptions, ComponentConstructor } from './types.js';
 
 const COMPONENT_METADATA_KEY = Symbol('component:metadata');
 
@@ -7,14 +7,22 @@ export interface ComponentMetadata {
   selector: string;
   multiple: boolean;
   propertyKey: string;
+  type?: ComponentConstructor;
 }
 
 export function Component(selector: string, options: ComponentOptions = {}): PropertyDecorator {
   return (target: object, propertyKey: string | symbol): void => {
+    // Try to get the type from options first, then fall back to design:type metadata
+    const typeFromMetadata = Reflect.getMetadata('design:type', target, propertyKey) as
+      | ComponentConstructor
+      | undefined;
+    const componentType = options.type ?? typeFromMetadata;
+
     const metadata: ComponentMetadata = {
       selector,
       multiple: options.multiple ?? false,
       propertyKey: String(propertyKey),
+      type: componentType,
     };
 
     // Store metadata for this property
