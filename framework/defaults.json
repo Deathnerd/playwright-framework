@@ -1,0 +1,13 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "timeouts": {
+    "navigation": 30000,
+    "action": 5000,
+    "assertion": 5000
+  },
+  "diagnostics": {
+    "screenshot": "only-on-failure",
+    "trace": "retain-on-failure",
+    "video": "off"
+  }
+}
