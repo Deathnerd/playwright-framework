@@ -1,4 +1,4 @@
-import { BaseComponent, Component } from '../../../framework/core/index.js';
+import { BaseComponent } from '@framework/core/index.js';
 
 export class NavItemComponent extends BaseComponent {
   async click(): Promise<void> {

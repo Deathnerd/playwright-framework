@@ -1,4 +1,4 @@
-import { test, expect } from '../../../framework/test.js';
+import { test, expect } from '@framework/test.js';
 import { HomePage } from '../pages/index.js';
 
 test.describe('Home Page', () => {

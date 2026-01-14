@@ -36,11 +36,16 @@ Multi-site Playwright page object framework with component composition.
 
 ## Key Patterns
 
-**Component properties:** Use `declare` keyword (not `!`) to avoid TypeScript field initialization issues with decorators.
+**Component properties:** Use getter methods for child components (Playwright's transpiler has issues with decorators).
 
 ```typescript
-@Component('[data-testid="header"]', { type: HeaderComponent })
-declare readonly header: HeaderComponent;
+get header() {
+  return new HeaderComponent(
+    this.locator.locator('[data-testid="header"]'),
+    this.config,
+    this.page
+  );
+}
 ```
 
 **Selectors:** Define as `static readonly selectors` object for type safety.

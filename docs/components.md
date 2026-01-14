@@ -144,10 +144,8 @@ export class PageLayoutComponent extends BaseComponent {
 ```
 
 **Why getters instead of decorators:**
-- Avoids Babel/TypeScript decorator issues
-- Simpler debugging
-- Explicit instantiation
-- Works with all build tools
+
+The framework includes a `@Component` decorator, but Playwright's built-in transpiler has compatibility issues with decorator metadata (`reflect-metadata`) and the `declare` keyword. Use getter methods for reliable component composition in Playwright tests.
 
 ## Component Collections
 
